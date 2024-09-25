@@ -1,0 +1,48 @@
+import { arrayUnion, arrayRemove, doc, updateDoc } from "firebase/firestore";
+import { CiShare2 } from "react-icons/ci";
+import { FaHeart, FaRegHeart, FaRetweet } from "react-icons/fa";
+import { LuMessageCircle } from "react-icons/lu";
+import { db, auth } from "../../firebase";
+
+const Buttons = ({ tweet }) => {
+  // Oturumu açık olan kullanıcı bu tweet'i likeladı mı?
+  const isLiked = tweet.likes.includes(auth.currentUser.uid);
+
+  console.log(tweet.likes);
+
+  // Like durumunu tersine çevirir
+  const toggleLike = async () => {
+    // Güncellenecek döküman referansı al
+    const tweetRef = doc(db, "tweets", tweet.id);
+
+    // Referans alınan tweet dökümanını güncelle
+    await updateDoc(tweetRef, {
+      likes: isLiked
+        ? arrayRemove(auth.currentUser.uid) // Beğeniyi kaldır
+        : arrayUnion(auth.currentUser.uid), // Beğeniyi ekle
+    });
+  };
+
+  return (
+    <div className="flex justify-between items-center">
+      <div className="p-3 rounded-full cursor-pointer transition hover:bg-[#33c1f93f]">
+        <LuMessageCircle />
+      </div>
+      <div className="flex gap-2 items-center p-3 rounded-full cursor-pointer transition hover:bg-[#00ff2a44]">
+        <FaRetweet />
+      </div>
+      <div
+        onClick={toggleLike}
+        className="p-3 rounded-full cursor-pointer transition hover:bg-[#ff00d444]"
+      >
+        {isLiked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+        <span>{tweet.likes.length}</span>
+      </div>
+      <div className="p-3 rounded-full cursor-pointer transition hover:bg-[#3b3b3bac]">
+        <CiShare2 />
+      </div>
+    </div>
+  );
+};
+
+export default Buttons;
